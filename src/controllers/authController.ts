@@ -17,7 +17,20 @@ export const register = async (req: Request, res: Response) => {
         const user = new User({name, email, password: hashedPassword});
 
         const savedUser = await user.save();
-        res.status(201).json({message: 'User created', id: savedUser._id})
+        const token = jwt.sign(
+            { id: savedUser._id, email: savedUser.email},
+            JWT_SECRET,
+            {expiresIn: '7d'}
+        );
+        res.status(201).json({
+            token,
+            user: {
+                id: savedUser._id,
+                name: savedUser.name,
+                email: savedUser.email
+            }
+        });
+
     } catch (error) {
         res.status(500).json({error: 'Something went wrong'})
     }
@@ -38,7 +51,11 @@ export const login = async (req: Request, res: Response) => {
         const token = jwt.sign({id: user._id, email: user.email}, JWT_SECRET, {
             expiresIn: '7d',
         });
-        res.json({token, name: user.name, email: user.email});
+        res.json({token, user: {
+            id: user._id,
+            name: user.name,
+            email: user.email
+        }});
     } catch (error){
         res.status(500).json({error: 'Something went wrong'});
     };

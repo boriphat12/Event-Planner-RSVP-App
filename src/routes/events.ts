@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import express from 'express';
 import Event from '../models/Event';
 import { AuthenticatedRequest } from '../types/express';
+import { authenticationToken } from '../middleware/authMiddleware';
 
 const router = express.Router();
 
@@ -27,7 +28,7 @@ router.get('/:id', async (req: Request, res: Response) => {
     }
 })
 
-router.post('/', async (req: AuthenticatedRequest, res: Response) => {
+router.post('/', authenticationToken , async (req: AuthenticatedRequest, res: Response) => {
     try {
         const {title, description, date, location, isPublic} = req.body;
         const newEvent = new Event({
@@ -35,8 +36,10 @@ router.post('/', async (req: AuthenticatedRequest, res: Response) => {
             description, 
             date, 
             location, 
-            isPublic, 
-            owner: req.userId});
+            isPublic,
+             // @ts-ignore
+            owner: req.userId
+        });
         await newEvent.save();
         res.status(201).json(newEvent);
     } catch (error) {
@@ -44,20 +47,44 @@ router.post('/', async (req: AuthenticatedRequest, res: Response) => {
     }
 })
 
-router.put('/:id', async(req: Request, res: Response) => {
+router.put('/:id', authenticationToken, async(req: AuthenticatedRequest, res: Response) => {
     try {
         const id = req.params.id;
         const {title, description, date, location, isPublic} = req.body;
-        const updatedEvent = await Event.findByIdAndUpdate(id, {title, description, date, location, isPublic}, {new: true})
+        const event = await Event.findById(id);
+        if (!event) {
+            res.status(404).json({ error: 'Event not found' });
+            return;
+        }
+
+        if (event.owner.toString() !== req.userId) {
+            res.status(403).json({ error: 'You are not allowed to edit this event' });
+            return;
+        }
+
+        const updatedEvent = await Event.findByIdAndUpdate(
+            id,
+            { title, description, date, location, isPublic },
+            { new: true }
+        );
         res.status(200).json(updatedEvent);
     } catch (error) {
         res.status(500).json({error: 'something went wrong'});
     }
 })
 
-router.delete('/:id', async(req: Request, res: Response) => {
+router.delete('/:id', authenticationToken, async(req: AuthenticatedRequest, res: Response) => {
     try {
         const id = req.params.id;
+        const event = await Event.findById(id);
+        if (!event) {
+            res.status(404).json({ error: 'Event not found' });
+            return;
+        }
+        if(event.owner.toString() !== req.userId) {
+            res.status(403).json({error: 'You are not allowed to delete this event'})
+            return;
+        }
         const deletedEvent = await Event.findByIdAndDelete(id);
         res.status(201).json(deletedEvent);
     } catch (error) {
