@@ -9,6 +9,7 @@ const login = async (email: string, password: string) => {
         user: {
             name: response.data.name,
             email: response.data.email,
+            id: response.data.user.id
         }
     }
 }
@@ -18,8 +19,9 @@ const register = async (name: string, email: string, password: string) => {
     return {
         token: response.data.token,
         user: {
-            name: response.data.name,
-            email: response.data.email,
+            name: response.data.user.name,
+            email: response.data.user.email,
+            id: response.data.user.id,
         }
     }
 }
