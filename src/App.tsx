@@ -1,13 +1,19 @@
 import { useEffect } from "react"
-import LoginForm from "./components/LoginForm"
-import RegisterForm from "./components/RegisterForm"
-import { useAppSelector } from "./hooks"
+import { useAppDispatch, useAppSelector } from "./hooks"
 import EventList from "./components/EventList"
 import EventForm from "./components/EventForm"
+import { Route, Routes } from "react-router-dom"
+import EventDetails from "./components/EventDetails"
+import { initializeEvents } from "./store/eventReducer"
+import EventFormWrapper from "./components/EventFormWrapper"
 
 
 const App = () => {
   const token = useAppSelector(state => state.auth.token)
+  const dispatch = useAppDispatch();
+  useEffect(() => {
+    dispatch(initializeEvents())
+  }, [dispatch])
 
   useEffect(() => {
     if(token) {
@@ -18,12 +24,13 @@ const App = () => {
   return (
     <div>
       <h1>Event Planner</h1>
-      <EventForm />
-      <EventList />
-      <h1>Register</h1>
-      < RegisterForm/> 
-      <h1>Login</h1>
-      < LoginForm />
+      <Routes>
+        <Route path='/' element={<EventList />} />
+        <Route path="/events/:id" element={<EventDetails />}/>
+        <Route path="/create" element={<EventForm />}/>
+        <Route path="/edit/:id" element={<EventFormWrapper />} />
+      </Routes>
+      
     </div>
   )
 }

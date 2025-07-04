@@ -1,53 +1,79 @@
 import { useState } from "react";
 import { useAppDispatch } from "../hooks"
 import type { EventType } from "../types";
-import { createEvent } from "../store/eventReducer";
+import { createEvent, upEvent } from "../store/eventReducer";
+import { useNavigate } from "react-router-dom";
 
-const EventForm = () => {
+interface Props {
+    event?: EventType;
+}
+
+const EventForm = ({event} : Props) => {
+    const [title, setTitle] = useState(event?.title || "");
+    const [description, setDescription] = useState(event?.description || "")
+    const [date, setDate] = useState(event?.date || "");
+    const [location, setLocation] = useState(event?.location || "");
+    const [isPublic, setIsPublic] = useState(event?.isPublic ?? true)
+
+
     const dispatch = useAppDispatch();
-    const [title, setTitle] = useState("");
-    const [date, setDate] = useState("");
-    const [isPublic, setIsPublic] = useState(true);
+    const navigate = useNavigate();
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         const newEvent: EventType = {
-            id: "",
+            id: event?.id || "",
             title,
+            description,
             date,
+            location,
             isPublic,
-            owner: ""
+            owner: event?.owner || "",
+        };
+        if(event){
+            dispatch(upEvent(newEvent));
+        } else {
+            dispatch(createEvent(newEvent));
         }
-        dispatch(createEvent(newEvent));
-        setTitle("");
-        setDate("");
+        navigate("/");
 
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <h2>Add Event</h2>
-            <input 
-                placeholder="Title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-            />
-            <input 
-                placeholder="Date"
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-            />
-            <label>
-                Public:
-                <input 
-                    type="checkbox"
-                    checked={isPublic}
-                    onChange={(e) => setIsPublic(e.target.checked)}
-                />
-            </label>
-            <button type="submit">Create</button>
-        </form>
+        <div>
+            <h2>{event ? "Edit Event" : "Create New Event"}</h2>
+            <form onSubmit={handleSubmit}>
+                <div>
+                    <label>Title</label>
+                    <input value={title} onChange={e => setTitle(e.target.value)} required />
+                </div>
+                <div>
+                    <label>Description</label>
+                    <textarea value={description} onChange={e => setDescription(e.target.value)} />
+                </div>
+                <div>
+                    <label>Date</label>
+                    <input type="date" value={date} onChange={e => setDate(e.target.value)} required />
+                </div>
+                <div>
+                    <label>Location</label>
+                    <input value={location} onChange={e => setLocation(e.target.value)} />
+                </div>
+                <div>
+                    <label>
+                        <input
+                            type="checkbox"
+                            checked={isPublic}
+                            onChange={e => setIsPublic(e.target.checked)}
+                        />{" "}
+                        Public
+                    </label>
+                </div>
+                <button type="submit">{event ? "Update Event" : "Create Event"}</button>
+            </form>
+        </div>
+
+        
     )
 }
 
