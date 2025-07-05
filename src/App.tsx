@@ -10,6 +10,8 @@ import RequireAuth from "./components/RequireAuth"
 import LoginForm from "./components/LoginForm"
 import RegisterForm from "./components/RegisterForm"
 import { checkAuth, logout } from "./store/authReducer"
+import Navbar from "./components/Navbar"
+import MyEvents from "./components/MyEvents"
 
 const App = () => {
   const token = useAppSelector(state => state.auth.token);
@@ -32,47 +34,30 @@ const App = () => {
 
   return (
     <div>
+      <Navbar />
       <h1>Event Planner</h1>
-      {user ? (
-      <div>
-          <span>Welcome, {user.name}!</span>
-          <button
-              onClick={() => {
-                  dispatch(logout());
-                  navigate("/login");
-              }}
-          >
-              Logout
-          </button>
-      </div>
-      ) : (
-          <div>
-              <span>You are not logged in.</span>
-          </div>
-      )}
       <Routes>
         <Route path='/' element={<EventList />} />
-        <Route path="/events/:id" element={<EventDetails />}/>
-        <Route path="/login" element={<LoginForm />} />
-        <Route path="/register" element={<RegisterForm />} />
-        <Route 
-          path="/create" 
+        <Route path="/myevents" 
           element={
-            <RequireAuth>
-              <EventForm />
-            </RequireAuth>
-          }
-          />
-        <Route path="/edit/:id" element={
+          <RequireAuth>
+            <MyEvents />
+          </RequireAuth>}/>
+        <Route path='/events/:id' element={<EventDetails />} />
+        <Route path='/login' element={<LoginForm />} />
+        <Route path='/register' element={<RegisterForm />} />
+        <Route path='/create' element={
+          <RequireAuth>
+            <EventForm />
+          </RequireAuth>
+        } />
+        <Route path='/edit/:id' element={
           <RequireAuth>
             <EventFormWrapper />
           </RequireAuth>
-          }
-           />
+        } />
       </Routes>
-      
     </div>
-  )
-}
-
+  );
+};
 export default App;

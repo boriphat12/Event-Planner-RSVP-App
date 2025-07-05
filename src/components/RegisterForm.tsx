@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { registerUser } from "../store/authReducer";
 import { useAppDispatch } from "../hooks";
+import { useNavigate } from "react-router-dom";
 
 const RegisterForm = () => {
     const [name, setName] = useState('');
@@ -8,12 +9,15 @@ const RegisterForm = () => {
     const [password, setPassword] = useState('');
     const dispatch = useAppDispatch()
 
+    const navigate = useNavigate();
+
     const handleConfirm = (e: React.FormEvent) => {
         e.preventDefault()
         dispatch(registerUser(name, email, password));
         setName("")
         setEmail("")
         setPassword("")
+        navigate("/");
     }
 
     return (
@@ -33,8 +37,9 @@ const RegisterForm = () => {
                 </p>
 
                 <button type="submit">confirm</button>
-                <button type="button">cancel</button>
             </form>
+                <button type="button" onClick={() => navigate("/")}>cancel</button>
+
         </div>
     )
 }
