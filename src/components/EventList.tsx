@@ -7,7 +7,7 @@ import { Link } from "react-router-dom";
 const EventList = () => {
     const dispatch = useAppDispatch();
     const events = useAppSelector((state) => state.event);
-
+    const auth = useAppSelector((state) => state.auth);
 
     const handleDelete = (id: string) => {
         if(window.confirm("Are you sure you want to delete this event?")){
@@ -24,10 +24,15 @@ const EventList = () => {
                         <Link to={`/events/${event.id}`}>
                             <strong>{event.title}</strong>
                         </Link> - {event.date}
-                        <button onClick={() => handleDelete(event.id)}>Delete</button>
-                        <Link to={`/edit/${event?.id}`}>
-                            <button>Edit event</button>
-                        </Link>
+                        {auth.token && auth.user?.id === event?.owner && (
+                            <>
+                                <Link to={`/edit/${event?.id}`}>
+                                    <button>Edit event</button>
+                                </Link>
+                                <button onClick={() => handleDelete(event.id)}>Delete</button>
+                            </>
+                        )}
+                        
                     </li>
                 ))}
             </ul>

@@ -19,3 +19,8 @@ export interface EventType {
     owner: string | User;
     
 }
+
+export interface LoginSystem {
+    email: string;
+    password: string;
+}
