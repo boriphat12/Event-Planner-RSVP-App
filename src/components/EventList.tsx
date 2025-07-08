@@ -1,9 +1,24 @@
-
 import { useState } from "react";
-import { useAppDispatch, useAppSelector } from "../hooks"
-import { delEvent,  } from "../store/eventReducer";
+import { useAppDispatch, useAppSelector } from "../hooks";
+import { delEvent } from "../store/eventReducer";
 import type { EventType } from "../types";
 import { Link } from "react-router-dom";
+
+import {
+    Box,
+    Typography,
+    TextField,
+    Select,
+    MenuItem,
+    Button,
+    Pagination,
+    Stack,
+    IconButton
+} from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import AddCircleIcon from "@mui/icons-material/AddCircle";
 
 const PAGE_SIZE = 5;
 
@@ -17,21 +32,21 @@ const EventList = () => {
     const [currentPage, setCurrentPage] = useState(1);
 
     const handleDelete = (id: string) => {
-        if(window.confirm("Are you sure you want to delete this event?")){
+        if (window.confirm("Are you sure you want to delete this event?")) {
             dispatch(delEvent(id));
         }
-    }
+    };
 
-    const filteredEvents = events.filter(event => 
+    const filteredEvents = events.filter((event) =>
         event.title.toLowerCase().includes(search.toLowerCase()) ||
         event.date.includes(search)
-    )
+    );
 
     const sortedEvents = [...filteredEvents].sort((a, b) => {
         switch (sortBy) {
             case "dateAsc":
                 return new Date(a.date).getTime() - new Date(b.date).getTime();
-            case "dataDesc":
+            case "dateDesc":
                 return new Date(b.date).getTime() - new Date(a.date).getTime();
             case "titleAsc":
                 return a.title.localeCompare(b.title);
@@ -40,7 +55,7 @@ const EventList = () => {
             default:
                 return 0;
         }
-    })
+    });
 
     const totalPages = Math.ceil(sortedEvents.length / PAGE_SIZE);
     const paginatedEvents = sortedEvents.slice(
@@ -48,71 +63,106 @@ const EventList = () => {
         currentPage * PAGE_SIZE
     );
 
-
     return (
-        <div>
-            <h2>Events</h2>
-            <input 
-                type="text"
-                placeholder="Search by title or date"
-                value={search}
-                onChange={(e) => {
-                    setSearch(e.target.value)
-                    setCurrentPage(1);
-                }}
-                style={{marginBottom: "1rem", padding: "0.5rem", width: "300px"}}
-            />
+        <Box sx={{ padding: 4 }}>
+            <Typography variant="h4" gutterBottom>
+                Events
+            </Typography>
 
-            <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                style={{ marginLeft: "1rem", padding: "0.5rem" }}
-            >
-                <option value="dateDesc">Newest First</option>
-                <option value="dateAsc">Oldest First</option>
-                <option value="titleAsc">Title A-Z</option>
-                <option value="titleDesc">Title Z-A</option>
-            </select>
-            <ul>
-                {paginatedEvents.map((event : EventType) => (
-                    <li key={event.id}>
-                        <Link to={`/events/${event.id}`}>
-                            <strong>{event.title}</strong>
-                        </Link> - {event.date}
-                        {auth.token && auth.user?.id === event?.owner && (
-                            <>
-                                <Link to={`/edit/${event?.id}`}>
-                                    <button>Edit</button>
-                                </Link>
-                                <button onClick={() => handleDelete(event.id)}>Delete</button>
-                            </>
-                        )}
-                        
-                    </li>
-                ))}
-            </ul>
+            {/* Search and Sort Controls */}
+            <Stack direction="row" spacing={2} mb={3}>
+                <TextField
+                    variant="outlined"
+                    placeholder="Search by title or date"
+                    value={search}
+                    onChange={(e) => {
+                        setSearch(e.target.value);
+                        setCurrentPage(1);
+                    }}
+                    InputProps={{
+                        startAdornment: <SearchIcon />
+                    }}
+                    sx={{ flex: 1 }}
+                />
 
-             <div style={{ marginTop: "1rem" }}>
-                {Array.from({ length: totalPages }, (_, i) => (
-                    <button
-                        key={i + 1}
-                        onClick={() => setCurrentPage(i + 1)}
-                        disabled={currentPage === i + 1}
-                        style={{
-                            margin: "0 0.25rem",
-                            padding: "0.5rem",
-                            background: currentPage === i + 1 ? "#ccc" : "#f5f5f5"
+                <Select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    variant="outlined"
+                    sx={{ width: 200 }}
+                >
+                    <MenuItem value="dateDesc">Newest First</MenuItem>
+                    <MenuItem value="dateAsc">Oldest First</MenuItem>
+                    <MenuItem value="titleAsc">Title A-Z</MenuItem>
+                    <MenuItem value="titleDesc">Title Z-A</MenuItem>
+                </Select>
+
+                <Button
+                    variant="contained"
+                    color="primary"
+                    startIcon={<AddCircleIcon />}
+                    component={Link}
+                    to="/create"
+                >
+                    New Event
+                </Button>
+            </Stack>
+
+            {/* Events List */}
+            <Stack spacing={2}>
+                {paginatedEvents.map((event: EventType) => (
+                    <Box
+                        key={event.id}
+                        sx={{
+                            border: "1px solid #ddd",
+                            borderRadius: 2,
+                            padding: 2,
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center"
                         }}
                     >
-                        {i + 1}
-                    </button>
+                        <Box>
+                            <Typography variant="h6" component={Link} to={`/events/${event.id}`} sx={{ textDecoration: "none", color: "inherit" }}>
+                                {event.title}
+                            </Typography>
+                            <Typography variant="body2" color="textSecondary">
+                                {event.date}
+                            </Typography>
+                        </Box>
+
+                        {auth.token && auth.user?.id === event?.owner && (
+                            <Stack direction="row" spacing={1}>
+                                <IconButton
+                                    color="primary"
+                                    component={Link}
+                                    to={`/edit/${event?.id}`}
+                                >
+                                    <EditIcon />
+                                </IconButton>
+                                <IconButton
+                                    color="error"
+                                    onClick={() => handleDelete(event.id)}
+                                >
+                                    <DeleteIcon />
+                                </IconButton>
+                            </Stack>
+                        )}
+                    </Box>
                 ))}
-            </div>
-            <Link to='/create'>
-                <button style={{marginTop: "1rem"}}>add new event</button>
-            </Link>
-        </div>
-    )
-}
+            </Stack>
+
+            {/* Pagination */}
+            <Stack alignItems="center" mt={3}>
+                <Pagination
+                    count={totalPages}
+                    page={currentPage}
+                    onChange={(_, value) => setCurrentPage(value)}
+                    color="primary"
+                />
+            </Stack>
+        </Box>
+    );
+};
 
 export default EventList;
