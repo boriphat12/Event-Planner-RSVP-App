@@ -12,6 +12,7 @@ import RegisterForm from "./components/RegisterForm"
 import { checkAuth, logout } from "./store/authReducer"
 import Navbar from "./components/Navbar"
 import MyEvents from "./components/MyEvents"
+import Profile from "./components/Profile"
 
 const App = () => {
   const token = useAppSelector(state => state.auth.token);
@@ -43,6 +44,11 @@ const App = () => {
           <RequireAuth>
             <MyEvents />
           </RequireAuth>}/>
+        <Route path="/profile" element={
+          <RequireAuth>
+            <Profile />
+          </RequireAuth>
+        }/>
         <Route path='/events/:id' element={<EventDetails />} />
         <Route path='/login' element={<LoginForm />} />
         <Route path='/register' element={<RegisterForm />} />

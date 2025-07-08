@@ -1,19 +1,25 @@
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../hooks"
 import { logout } from "../store/authReducer";
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
 
 const Navbar = () => {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const user = useAppSelector(state => state.auth.user);
-    const auth = useAppSelector(state => state.auth);
 
     const handleLogout = () => {
         dispatch(logout());
         navigate('/login');
     };
+
+    const linkStyle = ({ isActive }: { isActive: boolean }) => ({
+        marginRight: "1rem",
+        textDecoration: "none",
+        color: isActive ? "blue" : "black",
+        fontWeight: isActive ? "bold" : "normal"
+    });
 
     return (
         <nav style={{
@@ -25,30 +31,30 @@ const Navbar = () => {
             borderBottom: "1px solid #ddd"
         }}>
             <div>
-                <Link to="/" style={{marginRight: "1rem"}}>Home</Link>
-                {auth.token && (
-                    <Link to='/myevents'>
-                        <button>My Events</button>
-                    </Link>
+                <NavLink to="/" style={linkStyle}>Home</NavLink>
+                {user && (
+                    <>
+                        <NavLink to="/myevents" style={linkStyle}>My Events</NavLink>
+                        <NavLink to="/create" style={linkStyle}>Create Event</NavLink>
+                        <NavLink to="/profile" style={linkStyle}>Profile</NavLink>
+                    </>
                 )}
-                {user && <Link to="/create" style={{marginRight: "1rem"}}>Create Event</Link>}
-                
             </div>
             <div>
                 {user ? (
                     <>
-                        <span style={{marginRight: "1rem"}}>Hi, {user.name}</span>
+                        <span style={{ marginRight: "1rem" }}>Hi, {user.name}</span>
                         <button onClick={handleLogout}>Logout</button>
                     </>
-                ): (
+                ) : (
                     <>
-                        <Link to="/login">Login</Link>
-                        <Link to="/register">Register</Link>
+                        <NavLink to="/login" style={linkStyle}>Login</NavLink>
+                        <NavLink to="/register" style={linkStyle}>Register</NavLink>
                     </>
                 )}
             </div>
         </nav>
-    )
+    );
 }
 
 export default Navbar;
